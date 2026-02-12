@@ -11,7 +11,7 @@
     "clean": "rimraf reports/report.json reports/report.html",
     "tags": "npm run clean && cucumber-js --format pretty --format json:reports/report.json",
     "spec": "npm run clean && cucumber-js --format pretty --format json:reports/report.json",
-    "report": "node utility/generate-report.js"
+    "report": "node ./src/utility/generate-report.js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^10.3.0",

@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-const projectRoot = path.join(__dirname, '..');
+const projectRoot = path.join(__dirname, '..', '..'); // go from src/utility → root
 
 const reportsDir = path.join(projectRoot, 'reports');
 const jsonPath = path.join(reportsDir, 'report.json');
