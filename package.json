@@ -1,0 +1,26 @@
+{
+  "name": "api-framework",
+  "version": "1.0.0",
+  "description": "API Automation Framework",
+  "main": "index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=25.0.0"
+  },
+  "scripts": {
+    "clean": "rimraf reports/report.json reports/report.html",
+    "tags": "npm run clean && cucumber-js --format pretty --format json:reports/report.json",
+    "spec": "npm run clean && cucumber-js --format pretty --format json:reports/report.json",
+    "report": "node utility/generate-report.js"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.3.0",
+    "ajv": "^8.17.1",
+    "chai": "^4.4.1",
+    "cross-env": "^7.0.3",
+    "cucumber-html-reporter": "^7.2.0",
+    "dotenv": "^16.4.5",
+    "rimraf": "^5.0.5",
+    "supertest": "^7.0.0"
+  }
+}
