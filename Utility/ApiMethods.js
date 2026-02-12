@@ -9,7 +9,7 @@ class ApiMethods {
         this.world = world; // Cucumber world (optional)
     }
 
-    // 🔹 Attach JSON to report
+
     attachJSON(title, data) {
         if (!this.world) return;
 
@@ -24,7 +24,7 @@ ${JSON.stringify(data, null, 2)}
         this.world.attach(formatted, "text/plain");
     }
 
-    // 🔹 Attach Error to report
+
     attachError(error) {
         if (!this.world) return;
 
@@ -91,7 +91,6 @@ ${JSON.stringify(validate.errors, null, 2)}`
             this.validateStatus(response, expectedStatus, "GET", endpoint);
             this.validateSchema(schema, response.body, "GET", endpoint);
 
-            // 🔥 Auto Attach Response
             this.attachJSON(`GET ${endpoint} Response`, response.body);
 
             return response;
