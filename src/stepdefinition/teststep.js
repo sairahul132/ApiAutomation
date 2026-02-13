@@ -1,19 +1,30 @@
-const { When, Then } = require("@cucumber/cucumber");
+const { When, Then, Given } = require("@cucumber/cucumber");
 const { expect } = require("chai");
 const BookingAPI = require("../API/testapi");
+const e2e = require("../API/endtoendAPI");
 
 let response;
 
-When("I fetch all the booking ids {int}", async function (statuscode) {
-  response = await BookingAPI.getBookingID(statuscode);
+Given("I create a new booking using the POST API", async function () {
+  const response = await e2e.postCreateBooking(200);
+  expect(response).to.have.property("bookingid");
+  expect(response.booking).to.be.an("object");
 });
 
-When("Create a booking {int}", async function (statuscode) {
-  response = await BookingAPI.postCreateBooking(statuscode);
+
+Given("I store the generated booking ID", function () {
+  const storedId = e2e.getStoredBookingId();
+  console.log("Stored Booking ID:", storedId);
+  expect(storedId, "Booking ID was not stored").to.not.be.null;
 });
 
-Then("I should receive a list of booking ids", function () {
+When("I retrieve all booking IDs using the GET API", async function () {
+  const response = await e2e.getBookingID(200);
   expect(response).to.be.an("array");
-  expect(response.length).to.be.greaterThan(0);
-  expect(response[0]).to.have.property("bookingid");
+});
+
+
+Then("I should see the created booking ID in the booking list response", async function () {
+  const exists = await e2e.validateBookingIdExists(200);
+  expect(exists).to.be.true;
 });
