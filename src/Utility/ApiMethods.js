@@ -1,49 +1,56 @@
 const supertest = require("supertest");
 const axios = require("axios");
+const endpoints = require("../config/endpoints");
+const payloads = require("../test-data/payloads");
 const Ajv = require("ajv");
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 
 class ApiMethods {
 
-    constructor(world = null) {
-        this.world = world; // Cucumber world (optional)
+    async tokengenerator() {
+        try {
+            const response = await this.post({
+                url: endpoints.url,
+                endpoint: endpoints.Tokengenerator,
+                body: payloads.createtoken,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                expectedStatus: 200
+
+            })
+            const tokenId = await response.body.token
+            return tokenId;
+        }
+        catch (error) {
+            console.error("POST: Create Token Error:", error.message);
+            throw error;
+        }
     }
 
+    applyHeaders(req, token, headers = {}) {
 
-    attachJSON(title, data) {
-        if (!this.world) return;
+        const defaultHeaders = {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        };
 
-        const formatted = `
-==============================
-${title}
-==============================
-${JSON.stringify(data, null, 2)}
-==============================
-        `;
+        const finalHeaders = {
+            ...defaultHeaders,
+            ...headers
+        };
 
-        this.world.attach(formatted, "text/plain");
-    }
+        if (token) {
+            req.set("Authorization", `Bearer ${token}`);
+        }
 
+        req.set(finalHeaders);
 
-    attachError(error) {
-        if (!this.world) return;
-
-        const formatted = `
-❌ ERROR
-------------------------------
-${error}
-------------------------------
-        `;
-
-        this.world.attach(formatted, "text/plain");
-    }
-
-    applyHeaders(req, token, headers) {
-        if (token) req.set("Authorization", `Bearer ${token}`);
-        if (headers && Object.keys(headers).length > 0) req.set(headers);
         return req;
     }
+
 
     validateStatus(response, expectedStatus, method, endpoint) {
         if (response.status !== expectedStatus) {
@@ -80,6 +87,8 @@ ${JSON.stringify(validate.errors, null, 2)}`
         schema = null
     }) {
         try {
+            console.log("URL :" + url + endpoint);
+
             if (!url) throw new Error("Base URL is required");
 
             const request = supertest(url);
@@ -92,12 +101,10 @@ ${JSON.stringify(validate.errors, null, 2)}`
             this.validateStatus(response, expectedStatus, "GET", endpoint);
             this.validateSchema(schema, response.body, "GET", endpoint);
 
-            this.attachJSON(`GET ${endpoint} Response`, response.body);
-
             return response;
 
         } catch (error) {
-            this.attachError(error.message);
+            console.log(error.message);
             throw error;
         }
     }
@@ -112,6 +119,7 @@ ${JSON.stringify(validate.errors, null, 2)}`
         schema = null
     }) {
         try {
+            console.log("URL :" + url + endpoint);
             if (!url) throw new Error("Base URL is required");
             const request = supertest(url);
             let req = request.post(endpoint).send(body);
@@ -123,12 +131,12 @@ ${JSON.stringify(validate.errors, null, 2)}`
             this.validateStatus(response, expectedStatus, "POST", endpoint);
             this.validateSchema(schema, response.body, "POST", endpoint);
 
-            this.attachJSON(`POST ${endpoint} Response`, response.body);
+            console.log(`POST ${endpoint} Response`, response.body);
 
             return response;
 
         } catch (error) {
-            this.attachError(error.message);
+            console.log(error.message);
             throw error;
         }
     }
@@ -144,6 +152,7 @@ ${JSON.stringify(validate.errors, null, 2)}`
         schema = null
     }) {
         try {
+            console.log("URL :" + url + endpoint);
             if (!url) throw new Error("Base URL is required");
 
             const request = supertest(url);
@@ -156,12 +165,12 @@ ${JSON.stringify(validate.errors, null, 2)}`
             this.validateStatus(response, expectedStatus, "PUT", endpoint);
             this.validateSchema(schema, response.body, "PUT", endpoint);
 
-            this.attachJSON(`PUT ${endpoint} Response`, response.body);
+            console.log(`PUT ${endpoint} Response`, response.body);
 
             return response;
 
         } catch (error) {
-            this.attachError(error.message);
+            console.log(error.message);
             throw error;
         }
     }
@@ -175,6 +184,7 @@ ${JSON.stringify(validate.errors, null, 2)}`
         schema = null
     }) {
         try {
+            console.log("URL :" + url + endpoint);
             if (!url) throw new Error("Base URL is required");
 
             const request = supertest(url);
@@ -187,15 +197,15 @@ ${JSON.stringify(validate.errors, null, 2)}`
             this.validateStatus(response, expectedStatus, "DELETE", endpoint);
             this.validateSchema(schema, response.body, "DELETE", endpoint);
 
-            this.attachJSON(`DELETE ${endpoint} Response`, response.body);
+            console.log(`DELETE ${endpoint} Response`, response.body);
 
             return response;
 
         } catch (error) {
-            this.attachError(error.message);
+            console.log(error.message);
             throw error;
         }
     }
 }
 
-module.exports = ApiMethods;
+module.exports = new ApiMethods();

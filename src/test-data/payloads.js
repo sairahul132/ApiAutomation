@@ -12,5 +12,11 @@ module.exports = {
             },
             "additionalneeds": "super bowls"
         }
-    }
+    },
+    createtoken:
+    {
+        "username": "admin",
+        "password": "password123"
+
+    },
 }
