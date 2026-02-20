@@ -1,41 +1,18 @@
-Feature: Booking API
+Feature: Booking API Automation
 
-  @E2EScenario @e2e
-  Scenario: Create a POST Booking
-    Given I Generate the token using the POST API
-    Then I Create a booking using the POST API
-    Then I store the generated booking ID
-    When I retrieve all booking IDs using the GET API
-    Then I should see the created booking ID in the booking list response
-    When I Fetch the booking details by GET API
-    When I Update the booking details by PUT API
-    When I Delete the booking details by DELETE API
+  @e2e
+  Scenario: Complete Booking Lifecycle
 
-  @createPostBooking
-  Scenario: Create a POST Booking
-    Given I Generate the token using the POST API
-    Then I Create a booking using the POST API
-    Then I store the generated booking ID
+    Given I create a booking with:
+      | firstname  | Sai     |
+      | lastname   | Rahul   |
+      | totalprice | 5000    |
 
-  @GetBookingId
-  Scenario: Retrieve all the bookings
-    Given I Generate the token using the POST API
-    When I retrieve all booking IDs using the GET API
+    When I retrieve all booking IDs
+    Then I should see the created booking in list
+    When I fetch the booking details
 
-  @GetBookingDetails
-  Scenario: Get the booking ids
-    Given I Generate the token using the POST API
-    When Get the Booking details by ID "Value" using GET API
+    When I update the booking details with:
+      | firstname | UpdatedSai |
 
-  @UpdateDetails
-  Scenario: Update Booking
-    Given I Generate the token using the POST API
-    When Update the Booking details by ID "Value" using PUT API
-
-  @DeleteBookingDetailsById
-  Scenario: Update Booking
-    Given I Generate the token using the POST API
-    When Delete the Booking details by ID "Value" using DELETE API
-
-
-
+    When I delete the booking

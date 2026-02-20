@@ -1,29 +1,42 @@
 const ApiMethods = require("../utility/ApiMethods");
 const endpoints = require("../config/endpoints");
-const payloads = require("../test-data/payloads");
 
-class DELETEAPI{
+class DELETEAPI {
 
-        async DeleteBookingDetailsByID(enterBokkingID, statuscode) {
-            try {
-                const Tokenid = await ApiMethods.tokengenerator();
-                const response = await ApiMethods.delete({
-                    url: endpoints.url,
-                    endpoint: endpoints.getbookingdetils + enterBokkingID,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "Cookie": "token=" + `${Tokenid}`,
-                    },
-                    expectedStatus: statuscode
-                });
-    
-                return response.body;
-            } catch (error) {
-                console.error("Delete Booking Error:", error.message);
-                throw error;
-            }
-        }
+    constructor(world = null) {
+        this.api = new ApiMethods(world);
+        this.world = world;
     }
 
-module.exports = new DELETEAPI();
+    async deleteBookingDetailsByID(statuscode = 201, enterBookingID = null) {
+        try {
+
+            const bookingId = enterBookingID || this.world?.bookingId;
+
+            if (!bookingId) {
+                throw new Error("Booking ID not available for delete");
+            }
+
+            const token = await this.api.tokengenerator();
+
+            const response = await this.api.request({
+                method: "DELETE",
+                url: endpoints.url,
+                endpoint: endpoints.getbookingdetils + bookingId,
+                token: token,  
+                expectedStatus: statuscode
+            });
+
+            console.log(`Booking ID ${bookingId} deleted successfully`);
+            this.world.bookingId = null;
+
+            return response.body;
+
+        } catch (error) {
+            console.error("Delete Booking Error:", error.message);
+            throw error;
+        }
+    }
+}
+
+module.exports = DELETEAPI;

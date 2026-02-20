@@ -1,68 +1,65 @@
-const { When, Then, Given } = require("@cucumber/cucumber");
-const ApiMethods = require("../utility/ApiMethods");
+const { Given, When, Then } = require("@cucumber/cucumber");
 const { expect } = require("chai");
-const getapi = require('../API/GetApi')
-const postapi = require('../API/PostApi')
-const putapi = require('../API/PutApi')
-const deleteapi = require('../API/DeleteApi')
+
+const GETAPI = require("../API/GetApi");
+const POSTAPI = require("../API/PostApi");
+const PUTAPI = require("../API/PutApi");
+const DELETEAPI = require("../API/DeleteApi");
 
 let response;
-let responsebooking;
 
-Given("I Generate the token using the POST API", async function () {
-  response = await ApiMethods.tokengenerator();
-});
+Given("I create a booking with:", async function (dataTable) {
+    const overrides = dataTable.rowsHash();
+    const postApi = new POSTAPI(this);
+    response = await postApi.postCreateBooking(
+        overrides,
+        200
+    );
 
-Then("I Create a booking using the POST API", async function () {
-  responsebooking = await postapi.postCreateBooking(200);
-});
-
-Then("I store the generated booking ID", async function () {
-  const storedId = await postapi.getStoredBookingId();
-  console.log("Stored Booking ID:", storedId);
-  expect(storedId, "Booking ID was not stored").to.not.be.null;
-});
-
-When("I retrieve all booking IDs using the GET API", async function () {
-  response = await getapi.getBookingID(200);
-  expect(response).to.be.an("array");
-});
-
-Then("I should see the created booking ID in the booking list response", async function () {
-  const exists = await postapi.validateBookingIdExists(200);
-  expect(exists).to.be.true;
-});
-
-When("Get the Booking details by ID {string} using GET API", async function (getbookingid) {
-  response = await getapi.getBookingDetails(getbookingid,200);
-  expect(response).to.be.an("Object");
+    expect(response).to.have.property("bookingid");
+    expect(this.bookingId).to.not.be.null;
 });
 
 
-When("I Fetch the booking details by GET API", async function () {
-  response = await getapi.getBookingDetails(responsebooking.bookingid,200);
-  expect(response).to.be.an("Object");
+When("I retrieve all booking IDs", async function () {
+    const getApi = new GETAPI(this);
+    response = await getApi.getBookingID(200);
+    expect(response).to.be.an("array");
 });
 
-When("Update the Booking details by ID {string} using PUT API", async function (getbookingid) {
-  response = await putapi.updateBookingDetailsByID(getbookingid,200);
-  console.log("Updated Booking ID :"+getbookingid);
-});
-
-
-When("I Update the booking details by PUT API", async function () {
-  response = await putapi.updateBookingDetailsByID(responsebooking.bookingid,200);
-  console.log("Updated Booking ID :"+responsebooking.bookingid);
-});
-
-When("Delete the Booking details by ID {string} using DELETE API", async function (getbookingid) {
-  response = await deleteapi.DeleteBookingDetailsByID(getbookingid,201);
-  console.log("Deleted Booking ID :"+getbookingid);
-  
+Then("I should see the created booking in list", async function () {
+    const postApi = new POSTAPI(this);
+    const exists = await postApi.validateBookingIdExists(200);
+    expect(exists).to.be.true;
 });
 
 
-When("I Delete the booking details by DELETE API", async function () {
-  response = await deleteapi.DeleteBookingDetailsByID(responsebooking.bookingid,201);
-  console.log("Deleted Booking ID :"+responsebooking.bookingid);
+When("I fetch the booking details", async function () {
+    const getApi = new GETAPI(this);
+    response = await getApi.getBookingDetails(null, 200);
+    expect(response).to.be.an("object");
+    expect(response.firstname).to.exist;
+});
+
+When("I update the booking details with:", async function (dataTable) {
+    const overrides = dataTable.rowsHash();
+    const putApi = new PUTAPI(this);
+    response = await putApi.updateBookingDetailsByID(
+        overrides,
+        200
+    );
+
+    expect(response).to.be.an("object");
+
+    // Object.keys(overrides).forEach(key => {
+    //     if (response[key]) {
+    //         expect(response[key]).to.equal(overrides[key]);
+    //     }
+    // });
+});
+
+When("I delete the booking", async function () {
+    const deleteApi = new DELETEAPI(this);
+    response = await deleteApi.deleteBookingDetailsByID(201);
+    expect(this.bookingId).to.be.null;
 });

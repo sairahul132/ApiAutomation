@@ -1,39 +1,55 @@
 const ApiMethods = require("../utility/ApiMethods");
 const endpoints = require("../config/endpoints");
-const payloads = require("../test-data/payloads");
-
 
 class GETAPI {
 
-  async getBookingID(statuscode) {
-    try {
-      const response = await ApiMethods.get({
-        url: endpoints.url,
-        endpoint: endpoints.getbookingid,
-        expectedStatus: statuscode
-      });
-
-      return response.body;
-    } catch (error) {
-      console.error("Get Booking ID Error:", error.message);
-      throw error;
+    constructor(world = null) {
+        this.api = new ApiMethods(world);
+        this.world = world;
     }
-  }
 
-  async getBookingDetails(enterBokkingID,statuscode) {
-    try {
-      const response = await ApiMethods.get({
-        url: endpoints.url,
-        endpoint: endpoints.getbookingdetils+enterBokkingID,
-        expectedStatus: statuscode
-      });
+    async getBookingID(statuscode = 200) {
+        try {
 
-      return response.body;
-    } catch (error) {
-      console.error("Get Booking ID Error:", error.message);
-      throw error;
+            const response = await this.api.request({
+                method: "GET",
+                url: endpoints.url,
+                endpoint: endpoints.getbookingid,
+                expectedStatus: statuscode
+            });
+
+            return response.body;
+
+        } catch (error) {
+            console.error("Get Booking ID Error:", error.message);
+            throw error;
+        }
     }
-  }
 
+    async getBookingDetails(enterBookingID = null, statuscode = 200) {
+        try {
+
+
+            const bookingId = enterBookingID || this.world?.bookingId;
+
+            if (!bookingId) {
+                throw new Error("Booking ID not available");
+            }
+
+            const response = await this.api.request({
+                method: "GET",
+                url: endpoints.url,
+                endpoint: endpoints.getbookingdetils + bookingId,
+                expectedStatus: statuscode
+            });
+
+            return response.body;
+
+        } catch (error) {
+            console.error("Get Booking Details Error:", error.message);
+            throw error;
+        }
+    }
 }
-module.exports = new GETAPI();
+
+module.exports = GETAPI;

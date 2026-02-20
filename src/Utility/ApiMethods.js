@@ -1,57 +1,43 @@
 const supertest = require("supertest");
-const axios = require("axios");
+const Ajv = require("ajv");
 const endpoints = require("../config/endpoints");
 const payloads = require("../test-data/payloads");
-const Ajv = require("ajv");
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 
 class ApiMethods {
 
-    async tokengenerator() {
-        try {
-            const response = await this.post({
-                url: endpoints.url,
-                endpoint: endpoints.Tokengenerator,
-                body: payloads.createtoken,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                expectedStatus: 200
-
-            })
-            const tokenId = await response.body.token
-            return tokenId;
-        }
-        catch (error) {
-            console.error("POST: Create Token Error:", error.message);
-            throw error;
-        }
-    }
-
-    applyHeaders(req, token, headers = {}) {
-
-        const defaultHeaders = {
+    constructor() {
+        this.defaultHeaders = {
             "Content-Type": "application/json",
             "Accept": "application/json"
         };
-
-        const finalHeaders = {
-            ...defaultHeaders,
-            ...headers
-        };
-
-        if (token) {
-            req.set("Authorization", `Bearer ${token}`);
-        }
-
-        req.set(finalHeaders);
-
-        return req;
     }
 
+    // ===============================
+    // TOKEN GENERATOR
+    // ===============================
+    async tokengenerator() {
+        const response = await this.request({
+            method: "POST",
+            url: endpoints.url,
+            endpoint: endpoints.Tokengenerator,
+            body: payloads.createtoken,
+            expectedStatus: 200
+        });
 
+        const tokenId = response.body.token;
+
+        if (!tokenId) {
+            throw new Error("Token not found in response");
+        }
+
+        return tokenId;
+    }
+
+    // ===============================
+    // STATUS VALIDATION
+    // ===============================
     validateStatus(response, expectedStatus, method, endpoint) {
         if (response.status !== expectedStatus) {
             throw new Error(
@@ -63,6 +49,9 @@ Response: ${JSON.stringify(response.body)}`
         }
     }
 
+    // ===============================
+    // SCHEMA VALIDATION
+    // ===============================
     validateSchema(schema, responseBody, method, endpoint) {
         if (!schema) return;
 
@@ -77,135 +66,95 @@ ${JSON.stringify(validate.errors, null, 2)}`
         }
     }
 
-    async get({
+    // ===============================
+    // MAIN REQUEST ENGINE
+    // ===============================
+    async request({
+        method,
         url,
         endpoint,
-        token = "",
+        token = null,
+        body = {},
         queryParams = {},
         headers = {},
         expectedStatus = 200,
         schema = null
     }) {
-        try {
-            console.log("URL :" + url + endpoint);
 
-            if (!url) throw new Error("Base URL is required");
+        if (!url) throw new Error("Base URL is required");
 
-            const request = supertest(url);
-            let req = request.get(endpoint).query(queryParams);
+        const fullUrl = `${url}${endpoint}`;
+        console.log("URL:", fullUrl);
 
-            req = this.applyHeaders(req, token, headers);
+        const request = supertest(url);
+        let req;
 
-            const response = await req;
+        switch (method.toUpperCase()) {
 
-            this.validateStatus(response, expectedStatus, "GET", endpoint);
-            this.validateSchema(schema, response.body, "GET", endpoint);
+            case "GET":
+                req = request.get(endpoint).query(queryParams);
+                break;
 
-            return response;
+            case "POST":
+                req = request.post(endpoint).send(body);
+                break;
 
-        } catch (error) {
-            console.log(error.message);
-            throw error;
+            case "PUT":
+                req = request.put(endpoint).send(body);
+                break;
+
+            case "DELETE":
+                req = request.delete(endpoint);
+                break;
+
+            default:
+                throw new Error(`Unsupported HTTP method: ${method}`);
         }
+
+        // Merge default headers
+        const finalHeaders = {
+            ...this.defaultHeaders,
+            ...headers
+        };
+
+        req.set(finalHeaders);
+
+        // Token handling (Restful Booker style)
+        if (token) {
+            req.set("Cookie", `token=${token}`);
+        }
+
+        const response = await req;
+
+        this.validateStatus(response, expectedStatus, method, endpoint);
+        this.validateSchema(schema, response.body, method, endpoint);
+
+        console.log(`${method} ${endpoint} Response:`, response.body);
+
+        return response;
     }
 
-    async post({
-        url,
-        endpoint,
-        token = "",
-        body = {},
-        headers = {},
-        expectedStatus = 200,
-        schema = null
-    }) {
-        try {
-            console.log("URL :" + url + endpoint);
-            if (!url) throw new Error("Base URL is required");
-            const request = supertest(url);
-            let req = request.post(endpoint).send(body);
-
-            req = this.applyHeaders(req, token, headers);
-
-            const response = await req;
-
-            this.validateStatus(response, expectedStatus, "POST", endpoint);
-            this.validateSchema(schema, response.body, "POST", endpoint);
-
-            console.log(`POST ${endpoint} Response`, response.body);
-
-            return response;
-
-        } catch (error) {
-            console.log(error.message);
-            throw error;
-        }
-    }
-
-
-    async put({
-        url,
-        endpoint,
-        token = "",
-        body = {},
-        headers = {},
-        expectedStatus = 200,
-        schema = null
-    }) {
-        try {
-            console.log("URL :" + url + endpoint);
-            if (!url) throw new Error("Base URL is required");
-
-            const request = supertest(url);
-            let req = request.put(endpoint).send(body);
-
-            req = this.applyHeaders(req, token, headers);
-
-            const response = await req;
-
-            this.validateStatus(response, expectedStatus, "PUT", endpoint);
-            this.validateSchema(schema, response.body, "PUT", endpoint);
-
-            console.log(`PUT ${endpoint} Response`, response.body);
-
-            return response;
-
-        } catch (error) {
-            console.log(error.message);
-            throw error;
-        }
-    }
-
-    async delete({
-        url,
-        endpoint,
-        token = "",
-        headers = {},
-        expectedStatus = 200,
-        schema = null
-    }) {
-        try {
-            console.log("URL :" + url + endpoint);
-            if (!url) throw new Error("Base URL is required");
-
-            const request = supertest(url);
-            let req = request.delete(endpoint);
-
-            req = this.applyHeaders(req, token, headers);
-
-            const response = await req;
-
-            this.validateStatus(response, expectedStatus, "DELETE", endpoint);
-            this.validateSchema(schema, response.body, "DELETE", endpoint);
-
-            console.log(`DELETE ${endpoint} Response`, response.body);
-
-            return response;
-
-        } catch (error) {
-            console.log(error.message);
-            throw error;
-        }
-    }
+    // ===============================
+// DEEP CLONE
+// ===============================
+async deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
 }
 
-module.exports = new ApiMethods();
+// ===============================
+// BUILD DYNAMIC PAYLOAD
+// ===============================
+async buildPayload(basePayload, overrides = {}) {
+
+    const clone = await this.deepClone(basePayload);
+
+    for (const key of Object.keys(overrides)) {
+        clone[key] = overrides[key];
+    }
+
+    return clone;
+}
+
+}
+
+module.exports = ApiMethods;

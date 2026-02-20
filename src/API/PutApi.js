@@ -4,22 +4,39 @@ const payloads = require("../test-data/payloads");
 
 class PUTAPI {
 
-    async updateBookingDetailsByID(enterBokkingID, statuscode) {
+    constructor(world = null) {
+        this.api = new ApiMethods(world);
+        this.world = world;
+    }
+
+    async updateBookingDetailsByID(overrides = {}, statuscode = 200, enterBookingID = null) {
         try {
-            const Tokenid = await ApiMethods.tokengenerator();
-            const response = await ApiMethods.put({
+
+            const bookingId = enterBookingID || this.world?.bookingId;
+
+            if (!bookingId) {
+                throw new Error("Booking ID not available for update");
+            }
+
+            const token = await this.api.tokengenerator();
+
+
+            const dynamicPayload = await this.api.buildPayload(
+                payloads.putbooking.updatebooking,
+                overrides
+            );
+
+            const response = await this.api.request({
+                method: "PUT",
                 url: endpoints.url,
-                endpoint: endpoints.getbookingdetils + enterBokkingID,
-                body: payloads.putbooking.updatebooking,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "Cookie": "token=" + `${Tokenid}`,
-                },
+                endpoint: endpoints.getbookingdetils + bookingId,
+                body: dynamicPayload,
+                token: token,
                 expectedStatus: statuscode
             });
 
             return response.body;
+
         } catch (error) {
             console.error("Update Booking PUT Error:", error.message);
             throw error;
@@ -27,4 +44,4 @@ class PUTAPI {
     }
 }
 
-module.exports = new PUTAPI();
+module.exports = PUTAPI;
