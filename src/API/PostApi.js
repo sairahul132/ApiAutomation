@@ -14,13 +14,10 @@ class POSTAPI {
     async postCreateBooking(overrides = {}, statuscode) {
         try {
 
-            const dynamicPayload = await this.api.buildPayload(
-                payloads.postbooking.booking,
-                overrides
-            );
+            const dynamicPayload = await this.api.buildPayload(payloads.postbooking.booking,overrides);
 
             const response = await this.api.request({
-                method: "POST",
+                method: "Post",
                 url: endpoints.url,
                 endpoint: endpoints.getbookingid,
                 body: dynamicPayload,

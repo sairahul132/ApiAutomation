@@ -11,10 +11,7 @@ let response;
 Given("I create a booking with:", async function (dataTable) {
     const overrides = dataTable.rowsHash();
     const postApi = new POSTAPI(this);
-    response = await postApi.postCreateBooking(
-        overrides,
-        200
-    );
+    response = await postApi.postCreateBooking(overrides,200);
 
     expect(response).to.have.property("bookingid");
     expect(this.bookingId).to.not.be.null;
