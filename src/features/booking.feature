@@ -1,3 +1,4 @@
+@Regression
 Feature: Booking API Automation
 
   @e2e @validscenario
@@ -31,23 +32,21 @@ Feature: Booking API Automation
 
     When I retrieve all booking IDs with expected status 200
     Then I should see the created booking in list
-
     When I fetch booking details with id "" and expect status 200
-
     When I update booking with id "" and expect status 200 with:
       | firstname | UpdatedSai |
 
     When I delete booking with id "" and expect status 201
 
   @getWithFeatureId
-  Scenario: Fetch booking using bookingId passed from feature file
+  Scenario: Fetch booking using bookingId
     When I fetch booking details with id "1" and expect status 200
 
 
   #  SCENARIO 3 - Update Booking Using ID From Feature File
 
   @updateWithFeatureId
-  Scenario: Update booking using bookingId from feature file
+  Scenario: Update booking using bookingId
     When I update booking with id "1" and expect status 200 with:
       | firstname | FeatureUpdated |
 
@@ -55,7 +54,7 @@ Feature: Booking API Automation
   #  SCENARIO 4 - Delete Booking Using ID From Feature File
 
   @deleteWithFeatureId
-  Scenario: Delete booking using bookingId from feature file
+  Scenario: Delete booking using bookingId
     When I delete booking with id "2" and expect status 201
 
 

@@ -14,9 +14,6 @@ class ApiMethods {
         };
     }
 
-    // ===============================
-    // TOKEN GENERATOR
-    // ===============================
     async tokengenerator() {
         const response = await this.request({
             method: "POST",
@@ -35,9 +32,7 @@ class ApiMethods {
         return tokenId;
     }
 
-    // ===============================
-    // STATUS VALIDATION
-    // ===============================
+
     validateStatus(response, expectedStatus, method, endpoint) {
         if (response.status !== expectedStatus) {
             throw new Error(
@@ -49,9 +44,7 @@ Response: ${JSON.stringify(response.body)}`
         }
     }
 
-    // ===============================
-    // SCHEMA VALIDATION
-    // ===============================
+
     validateSchema(schema, responseBody, method, endpoint) {
         if (!schema) return;
 
@@ -66,9 +59,6 @@ ${JSON.stringify(validate.errors, null, 2)}`
         }
     }
 
-    // ===============================
-    // MAIN REQUEST ENGINE
-    // ===============================
     async request({
         method,
         url,
@@ -111,7 +101,7 @@ ${JSON.stringify(validate.errors, null, 2)}`
                 throw new Error(`Unsupported HTTP method: ${method}`);
         }
 
-        // Merge default headers
+
         const finalHeaders = {
             ...this.defaultHeaders,
             ...headers
@@ -119,7 +109,7 @@ ${JSON.stringify(validate.errors, null, 2)}`
 
         req.set(finalHeaders);
 
-        // Token handling (Restful Booker style)
+
         if (token) {
             req.set("Cookie", `token=${token}`);
         }
@@ -134,16 +124,11 @@ ${JSON.stringify(validate.errors, null, 2)}`
         return response;
     }
 
-    // ===============================
-// DEEP CLONE
-// ===============================
+
 async deepClone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-// ===============================
-// BUILD DYNAMIC PAYLOAD
-// ===============================
 async buildPayload(basePayload, overrides = {}) {
 
     const clone = await this.deepClone(basePayload);
