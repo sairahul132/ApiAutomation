@@ -9,39 +9,43 @@ class PUTAPI {
         this.world = world;
     }
 
-    async updateBookingDetailsByID(overrides = {}, statuscode = 200, enterBookingID = null) {
-        try {
+async updateBookingDetailsByID(
+    enterBookingID = null,
+    overrides = {},
+    statuscode = 200
+) {
+    try {
 
-            const bookingId = enterBookingID || this.world?.bookingId;
+        const bookingId = enterBookingID || this.world?.bookingId;
 
-            if (!bookingId) {
-                throw new Error("Booking ID not available for update");
-            }
-
-            const token = await this.api.tokengenerator();
-
-
-            const dynamicPayload = await this.api.buildPayload(
-                payloads.putbooking.updatebooking,
-                overrides
-            );
-
-            const response = await this.api.request({
-                method: "PUT",
-                url: endpoints.url,
-                endpoint: endpoints.getbookingdetils + bookingId,
-                body: dynamicPayload,
-                token: token,
-                expectedStatus: statuscode
-            });
-
-            return response.body;
-
-        } catch (error) {
-            console.error("Update Booking PUT Error:", error.message);
-            throw error;
+        if (!bookingId) {
+            throw new Error("Booking ID not available for update");
         }
+
+        const token = await this.api.tokengenerator();
+
+        const dynamicPayload = await this.api.buildPayload(
+            payloads.putbooking.updatebooking,
+            overrides
+        );
+
+        const response = await this.api.request({
+            method: "PUT",
+            url: endpoints.url,
+            endpoint: endpoints.getbookingdetils + bookingId,
+            body: dynamicPayload,
+            token: token,
+            expectedStatus: statuscode
+        });
+
+        return response.body;
+
+    } catch (error) {
+        console.error("Update Booking PUT Error:", error.message);
+        throw error;
     }
+}
+
 }
 
 module.exports = PUTAPI;

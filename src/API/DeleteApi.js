@@ -8,35 +8,52 @@ class DELETEAPI {
         this.world = world;
     }
 
-    async deleteBookingDetailsByID(statuscode = 201, enterBookingID = null) {
-        try {
+async deleteBookingDetailsByID(
+    enterBookingID = null,
+    statuscode = 201
+) {
+    try {
 
-            const bookingId = enterBookingID || this.world?.bookingId;
+        let bookingId;
 
-            if (!bookingId) {
-                throw new Error("Booking ID not available for delete");
-            }
 
-            const token = await this.api.tokengenerator();
-
-            const response = await this.api.request({
-                method: "DELETE",
-                url: endpoints.url,
-                endpoint: endpoints.getbookingdetils + bookingId,
-                token: token,  
-                expectedStatus: statuscode
-            });
-
-            console.log(`Booking ID ${bookingId} deleted successfully`);
-            this.world.bookingId = null;
-
-            return response.body;
-
-        } catch (error) {
-            console.error("Delete Booking Error:", error.message);
-            throw error;
+        if (enterBookingID !== null && enterBookingID !== undefined) {
+            bookingId = String(enterBookingID).trim();
         }
+
+
+        if (!bookingId) {
+            bookingId = this.world?.bookingId;
+        }
+
+        if (!bookingId) {
+            throw new Error("Booking ID not available for delete");
+        }
+
+        const token = await this.api.tokengenerator();
+
+        const response = await this.api.request({
+            method: "DELETE",
+            url: endpoints.url,
+            endpoint: endpoints.getbookingdetils + bookingId,
+            token: token,
+            expectedStatus: statuscode
+        });
+
+        console.log(`Booking ID ${bookingId} deleted successfully`);
+
+        if (statuscode === 201) {
+            this.world.bookingId = null;
+        }
+
+        return response.body;
+
+    } catch (error) {
+        console.error("Delete Booking Error:", error.message);
+        throw error;
     }
+}
+
 }
 
 module.exports = DELETEAPI;
