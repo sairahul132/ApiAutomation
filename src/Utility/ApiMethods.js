@@ -125,20 +125,20 @@ ${JSON.stringify(validate.errors, null, 2)}`
     }
 
 
-async deepClone(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-async buildPayload(basePayload, overrides = {}) {
-
-    const clone = await this.deepClone(basePayload);
-
-    for (const key of Object.keys(overrides)) {
-        clone[key] = overrides[key];
+    async deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
     }
 
-    return clone;
-}
+    async buildPayload(basePayload, overrides = {}) {
+
+        const clone = await this.deepClone(basePayload);
+
+        for (const key of Object.keys(overrides)) {
+            clone[key] = overrides[key];
+        }
+
+        return clone;
+    }
 
 }
 
